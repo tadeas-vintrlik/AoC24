@@ -1,9 +1,10 @@
 package.path = package.path .. ";../util/?.lua"
 local Array = require("array")
+local Map = require("map")
 
 local file = assert(io.open("input"), "Could not open file")
 
-local rules = {}
+local rules = Map()
 local updates = Array()
 for line in file:lines() do
     if  string.find(line, "|") then
@@ -39,17 +40,38 @@ local function isValidUpdate (update)
 end
 
 
-local validUpdates = {}
+local validUpdates = Array()
+local invalidUpdates = Array()
 for _, update in ipairs(updates) do
     if isValidUpdate(update) then
         table.insert(validUpdates, update)
+    else
+        table.insert(invalidUpdates, update)
     end
 end
 
 local sumMiddles = 0
 for _, vp in ipairs(validUpdates) do
-    -- print(Array(vp))
     sumMiddles = sumMiddles + vp[math.ceil(#vp/2)]
 end
 
 print("Part 1: " .. sumMiddles)
+
+for i, p in ipairs(invalidUpdates) do
+    table.sort(p, function (v1, v2)
+        local before = rules[v2]
+        if before then
+            return before:contains(v1)
+        else
+            return false
+        end
+    end)
+    updates[i] = p
+end
+
+local sumMiddles2 = 0
+for _, vp in ipairs(invalidUpdates) do
+    sumMiddles2 = sumMiddles2 + vp[math.ceil(#vp/2)]
+end
+
+print("Part 2: " .. sumMiddles2)
