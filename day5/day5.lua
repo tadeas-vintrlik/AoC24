@@ -1,51 +1,34 @@
+package.path = package.path .. ";../util/?.lua"
+local Array = require("array")
+
 local file = assert(io.open("input"), "Could not open file")
 
 local rules = {}
-local updates = {}
+local updates = Array()
 for line in file:lines() do
     if  string.find(line, "|") then
-        _, _, num1, num2 = string.find(line, "(%d+)|(%d+)")
+        local _, _, num1, num2 = string.find(line, "(%d+)|(%d+)")
         if not rules[num2] then
-            rules[num2] = {}
+            rules[num2] = Array()
         end
         table.insert(rules[num2], num1)
     end
 
     if  string.find(line, ",") then
-        table.insert(updates, {})
+        table.insert(updates, Array())
         for v in line:gmatch("%d+") do
             table.insert(updates[#updates], v)
         end
     end
 end
 
-
-function contains(haystack, needle)
-    for _, value in ipairs(haystack) do
-        if value == needle then
-            return true
-        end
-    end
-    return false
-end
-
-function intersect(arr1, arr2)
-    local res = {}
-    for _, v1 in ipairs(arr1) do
-        if contains(arr2, v1) then
-            table.insert(res, v1)
-        end
-    end
-    return res
-end
-
-function isValidUpdate (update)
-    local printed = {}
+local function isValidUpdate (update)
+    local printed = Array()
     for _, pageNum in ipairs(update) do
-        before = rules[pageNum]
+        local before = rules[pageNum]
         if before then
-            for _, v in ipairs(intersect(before, update)) do
-                if not contains(printed, v) then
+            for _, v in ipairs(before:intersect(update)) do
+                if not printed:contains(v) then
                     return false
                 end
             end
@@ -65,6 +48,7 @@ end
 
 local sumMiddles = 0
 for _, vp in ipairs(validUpdates) do
+    -- print(Array(vp))
     sumMiddles = sumMiddles + vp[math.ceil(#vp/2)]
 end
 
