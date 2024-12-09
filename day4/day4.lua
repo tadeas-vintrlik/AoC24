@@ -1,61 +1,67 @@
-local file = assert(io.open("test"), "Could not open file")
+package.path = package.path .. ";../util/?.lua"
+local Matrix = require("matrix")
+local Point = require("point")
 
-local matrix = {}
+local file = assert(io.open("input"), "Could not open file")
 
-for line in file:lines() do
-    table.insert(matrix, {})
-    for char in line:gmatch(".") do
-        table.insert(matrix[#matrix], char)
-    end
+local matrix = Matrix:fromFile(file)
+
+-- A buffer that has always the last 4 characters
+local buffer = { value = "" }
+function buffer:concat(c)
+    assert(#c == 1)
+    self.value = string.sub(self.value, -3) .. c
+    assert(#self.value <= 4)
+end
+function buffer:check()
+    return self.value == "XMAS" or self.value == "SAMX"
 end
 
-local horizontal = ""
-
-for _, v in ipairs(matrix) do
-    for _, vv in ipairs(v) do
-        horizontal = horizontal .. vv
-    end
-end
-
-local vertical = ""
-
-for i = 1,#matrix do
-    for j = 1,#matrix do
-        vertical = vertical .. matrix[j][i]
-    end
-end
-
-local diagonal = ""
-
-for i = 0,math.max(#matrix,#matrix[1]) do
-    for j = 1,math.max(#matrix,#matrix[1]) do
-        if j+i <= #matrix[1] and j <= #matrix then
-            diagonal = diagonal .. matrix[j][j+i] 
-        end
-    end
-end
-
-for i = 1,math.max(#matrix, #matrix[1]) do
-    for j = 1,math.max(#matrix, #matrix[1]) do
-        if j+i <= #matrix and j <= #matrix[1] then
-            diagonal = diagonal .. matrix[j+i][j] 
-        end
-    end
-end
-
+-- horizontal
 local count = 0
-
-for _, needle in ipairs({"XMAS", "SAMX"}) do
-    for _, haystack in ipairs({horizontal, vertical, diagonal}) do
-        while true do
-            local i = string.find(haystack, needle)
-            if i == nil then
-                break
-            end
-            haystack = string.sub(haystack, i+1, #haystack)
+for y = 1,#matrix do
+    buffer.value = ""
+    for x = 1,#matrix[y] do
+        buffer:concat(matrix:get(Point(x, y)))
+        if buffer:check() then
             count = count + 1
         end
     end
 end
 
-print(count)
+-- vertical
+for x = 1,#matrix[1] do
+    buffer.value = ""
+    for y = 1,#matrix do
+        buffer:concat(matrix:get(Point(x, y)))
+        if buffer:check() then
+            count = count + 1
+        end
+    end
+end
+
+local loopMax = math.max(#matrix, #matrix[1])
+
+-- diagonals LR
+for offset = -loopMax+3,loopMax-3 do
+    buffer.value = ""
+    for i = 1,loopMax do
+        buffer:concat(matrix:get(Point(i + offset, i)) or ".")
+        if buffer:check() then
+            count = count + 1
+        end
+    end
+end
+
+-- diagonals RL
+for offset = -loopMax+3,loopMax-3 do
+    buffer.value = ""
+    for i = loopMax,0,-1 do
+        buffer:concat(matrix:get(Point(i + offset, #matrix - i)) or ".")
+        if buffer:check() then
+            count = count + 1
+        end
+    end
+end
+
+print("Part 1: " .. count)
