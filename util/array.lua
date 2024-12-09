@@ -34,6 +34,29 @@ function Array:__tostring()
     return "{" .. table.concat(elements, ", ") .. "}"
 end
 
+function generateCombinations(n, options)
+    local results = {}
+
+    local function generate(current, depth)
+        if depth == n then
+            local copy = {}
+            for _, v in ipairs(current) do
+                table.insert(copy, v)
+            end
+            table.insert(results, copy)
+            return
+        end
+
+        for _, o in ipairs(options) do
+            current[depth + 1] = o
+            generate(current, depth + 1)
+        end
+    end
+
+    generate({}, 0)
+    return results
+end
+
 setmetatable(Array, {
     __call = Array.new,
     __tostring = Array.__tostring
