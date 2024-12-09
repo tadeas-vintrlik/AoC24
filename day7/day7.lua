@@ -38,4 +38,39 @@ local sum = 0
 for _, v in ipairs(trueEq) do
     sum = sum + v
 end
+
 print("Part 1: " .. sum)
+
+local trueEq2 = Array()
+for k, v in pairs(equations) do
+    local combs = generateCombinations(#v, {"*", "+", "||" })
+    for _, c in ipairs(combs) do
+         (function()
+            local res = v[1]
+            for i = 2,#v do
+                local op = c[i-1]
+                if op == "*" then
+                    res = res * v[i]
+                elseif op == "+" then
+                    res = res + v[i]
+                else
+                    res = res .. v[i]
+                end
+                if tonumber(res) > tonumber(k) then
+                    return
+                end
+            end
+            if tonumber(res) == tonumber(k) and not trueEq2:contains(k) then
+                table.insert(trueEq2, k)
+                return
+            end
+        end)()
+    end
+end
+
+local sum2 = 0
+for _, v in ipairs(trueEq2) do
+    sum2 = sum2 + v
+end
+
+print("Part 2: " .. sum2)
