@@ -65,3 +65,21 @@ for offset = -loopMax+3,loopMax-3 do
 end
 
 print("Part 1: " .. count)
+
+
+local letterAs = matrix:find("A")
+local count2 = 0
+for _, v in ipairs(letterAs) do
+    -- left up, right down, etc.
+    local lu = matrix:get(v + Point(-1,-1))
+    local ru = matrix:get(v + Point(1,-1))
+    local ld = matrix:get(v + Point(-1,1))
+    local rd = matrix:get(v + Point(1,1))
+    if (((lu == "M" and rd == "S") or (lu == "S" and rd == "M"))
+        and
+        ((ru == "M" and ld == "S") or (ru == "S" and ld == "M"))) then
+        count2 = count2 + 1
+    end
+end
+
+print("Part 2: " .. count2)
